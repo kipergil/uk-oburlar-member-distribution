@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UK Oburlar Member Distribution</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+html,body,#map{height:100%;margin:0;font-family:Arial,sans-serif}
+#panel{position:absolute;z-index:1000;left:12px;top:12px;background:#fff;padding:12px 16px;border-radius:10px;
+box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.legend div{margin:4px 0}
+</style>
+</head>
+<body>
+<div id="panel">
+<h3 style="margin:0">UK Oburlar Members</h3>
+<p style="margin:6px 0">129 responses</p>
+<div class="legend">
+<div>🔴 London (55)</div>
+<div>🟠 South East (15)</div>
+<div>🟠 West Midlands (13)</div>
+<div>🟡 Others proportional</div>
+</div>
+</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map').setView([54.3,-2.5],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ attribution:'© OpenStreetMap contributors'
+}).addTo(map);
+
+const data=[
+["London",51.5074,-0.1278,55],
+["South East",51.27,-0.90,15],
+["West Midlands",52.486,-1.89,13],
+["North East",54.978,-1.617,9],
+["South West",50.72,-3.53,9],
+["East of England",52.24,0.90,7],
+["North West",53.48,-2.24,6],
+["Scotland",56.49,-4.20,5],
+["East Midlands",52.95,-1.15,5],
+["Northern Ireland",54.60,-6.65,2],
+["Yorkshire & Humber",53.80,-1.55,2],
+["Wales",52.13,-3.78,1]
+];
+
+function color(v){
+ if(v>=40)return "#8B0000";
+ if(v>=15)return "#d7301f";
+ if(v>=10)return "#ef6548";
+ if(v>=7)return "#fc8d59";
+ if(v>=5)return "#fdbb84";
+ return "#fee8c8";
+}
+
+data.forEach(r=>{
+ L.circleMarker([r[1],r[2]],{
+   radius:8+r[3]/2,
+   color:color(r[3]),
+   fillColor:color(r[3]),
+   fillOpacity:0.75,
+   weight:2
+ }).bindPopup("<b>"+r[0]+"</b><br>Members: "+r[3]+"<br>"+(r[3]/129*100).toFixed(1)+"%")
+ .addTo(map);
+});
+</script>
+</body>
+</html>
