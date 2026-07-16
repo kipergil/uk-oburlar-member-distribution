@@ -62,7 +62,7 @@ function color(v){
  if(v>=5)return "#fdbb84";
  return "#fee8c8";
 }
-const map=L.map("map").setView([54.4,-2.7],6);
+const map=L.map("map").setView([54.4,-2.7],9);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
 const bounds=[];
 const legend=document.getElementById("items");
