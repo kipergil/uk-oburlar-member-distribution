@@ -11,29 +11,43 @@ html,body,#map{height:100%;margin:0;font-family:Arial,sans-serif}
 #legend{
 position:absolute;top:10px;right:10px;z-index:1000;
 background:rgba(255,255,255,.96);
-padding:10px;border-radius:10px;
-width:190px;max-height:85vh;overflow:auto;
+padding:8px 10px;border-radius:8px;
+width:160px;max-height:85vh;overflow:auto;
 box-shadow:0 4px 12px rgba(0,0,0,.25);
-font-size:12px}
-#legend h3{margin:0;font-size:15px}
-#legend p{margin:4px 0 8px;color:#666;font-size:11px}
-.item{display:flex;justify-content:space-between;align-items:center;margin:3px 0}
+font-size:11px}
+#legend-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:6px}
+#legend h3{margin:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#legend-toggle{font-weight:bold;font-size:14px;line-height:1;padding:0 2px;user-select:none;flex:none}
+#legend p{margin:4px 0 6px;color:#666;font-size:10px}
+#legend.collapsed{width:auto}
+#legend.collapsed #legend-body{display:none}
+.item{display:flex;justify-content:space-between;align-items:center;margin:2px 0;gap:6px}
 .left{display:flex;align-items:center;gap:6px}
-.dot{width:10px;height:10px;border-radius:50%}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
 .pin{
 background:#c62828;color:#fff;border:2px solid #fff;
 border-radius:18px;padding:2px 7px;font-weight:bold;
 font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,.4);
 white-space:nowrap
 }
+.region-tooltip{
+background:rgba(255,255,255,.9);border:none;box-shadow:0 1px 4px rgba(0,0,0,.3);
+font-size:11px;padding:1px 6px;
+}
+.region-tooltip::before{display:none}
 .leaflet-popup-content{font-size:13px}
 </style>
 </head>
 <body>
 <div id="legend">
-<h3>🇬🇧 UK Member Distribution</h3>
+<div id="legend-header">
+<h3>🇬🇧 UK Members</h3>
+<span id="legend-toggle">−</span>
+</div>
+<div id="legend-body">
 <p>Total members: <b>129</b></p>
 <div id="items"></div>
+</div>
 </div>
 <div id="map"></div>
 
@@ -62,10 +76,11 @@ function color(v){
  if(v>=5)return "#fdbb84";
  return "#fee8c8";
 }
-const map=L.map("map").setView([54.4,-2.7],4);
+const TOOLTIP_ZOOM_THRESHOLD=7;
+const map=L.map("map").setView([54.4,-2.7],6);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
-const bounds=[];
 const legend=document.getElementById("items");
+const markers=[];
 data.forEach(r=>{
  legend.innerHTML+=`<div class="item"><div class="left"><span class="dot" style="background:${color(r[3])}"></span>${r[0]}</div><b>${r[3]}</b></div>`;
  const icon=L.divIcon({
@@ -76,10 +91,26 @@ data.forEach(r=>{
  });
  const m=L.marker([r[1],r[2]],{icon}).addTo(map);
  m.bindPopup(`<b>${r[0]}</b><br><b>${r[3]}</b> members<br>${(r[3]/total*100).toFixed(1)}%`);
- m.bindTooltip(r[0],{permanent:true,direction:"top",offset:[0,-18]});
- bounds.push([r[1],r[2]]);
+ m.bindTooltip(r[0],{permanent:true,direction:"top",offset:[0,-18],className:"region-tooltip"});
+ markers.push(m);
 });
-map.fitBounds(bounds,{padding:[40,40]});
+
+function updateTooltips(){
+ const show=map.getZoom()>=TOOLTIP_ZOOM_THRESHOLD;
+ markers.forEach(m=>{
+   if(show)m.openTooltip();
+   else m.closeTooltip();
+ });
+}
+map.on("zoomend",updateTooltips);
+updateTooltips();
+
+const legendEl=document.getElementById("legend");
+const legendToggle=document.getElementById("legend-toggle");
+document.getElementById("legend-header").addEventListener("click",()=>{
+ const collapsed=legendEl.classList.toggle("collapsed");
+ legendToggle.textContent=collapsed?"+":"−";
+});
 </script>
 </body>
 </html>
